@@ -30,7 +30,6 @@ const fragmentShaderText =
 
 function init()
 {
-	console.log("hallo")
 	const canvas = document.getElementById("cg1")
 	const gl = canvas.getContext("webgl")
 	
@@ -132,12 +131,17 @@ function init()
 	)
 	gl.enableVertexAttribArray(colorAttributeLocation)
 	
-	// set shader color
-	const colorLocation = gl.getUniformLocation(program, "color")
-	gl.uniform3f(colorLocation, 220/255, 60/255, 5/255, 1)
-	console.log(colorLocation)
+	function loop() {
+		gl.drawArrays(gl.TRIANGLES, 0, 24)
+		// set shader color
+		const colorLocation = gl.getUniformLocation(program, "color")
+
+		gl.uniform3f(colorLocation, Math.random(), Math.random(), Math.random(), 1)
+		requestAnimationFrame(loop)
+	}
 	
-	gl.drawArrays(gl.TRIANGLES, 0, 24)
+	requestAnimationFrame(loop)
+	
 	gl.bindBuffer(gl.ARRAY_BUFFER, null)
 }
 
