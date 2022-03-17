@@ -6,12 +6,13 @@ const vertexShaderText =
 	`
 	precision mediump float;
 	attribute vec2 vertPos;
-	attribute vec3 vertColor;
+	attribute vec3 vertColor; // unused at the moment
 	varying vec3 fragColor;
+	uniform vec3 color;
 	
 	void main()
 	{
-		fragColor = vertColor;
+		fragColor = color;
 		gl_Position = vec4(vertPos, 0, 1.0);
 	}
 	`
@@ -95,6 +96,7 @@ function init()
 		-0.5, -0.3, 1.0, 0.5, 0.5,
 		0.5, -0.5, 1.0, 0.5, 0.5
 		]
+		
 	const triangleVBO = gl.createBuffer()
 	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVBO) // bind buffer to set as default
 	gl.bufferData(gl.ARRAY_BUFFER, 
@@ -129,6 +131,11 @@ function init()
 	2 * Float32Array.BYTES_PER_ELEMENT,
 	)
 	gl.enableVertexAttribArray(colorAttributeLocation)
+	
+	// set shader color
+	const colorLocation = gl.getUniformLocation(program, "color")
+	gl.uniform3f(colorLocation, 220/255, 60/255, 5/255, 1)
+	console.log(colorLocation)
 	
 	gl.drawArrays(gl.TRIANGLES, 0, 24)
 	gl.bindBuffer(gl.ARRAY_BUFFER, null)
