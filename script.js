@@ -6,14 +6,17 @@ const vertexShaderText =
 	`
 	precision mediump float;
 	attribute vec2 vertPos;
+	varying vec4 currentPos;
 	attribute vec3 vertColor; // unused at the moment
 	varying vec3 fragColor;
 	uniform vec3 color;
+	uniform vec2 positionChange;
 	
 	void main()
 	{
 		fragColor = color;
 		gl_Position = vec4(vertPos, 0, 1.0);
+		currentPos = gl_Position + positionChange;
 	}
 	`
 
@@ -136,6 +139,9 @@ function init()
 	var blueValue = 0
 	var isIncrementing = true
 	
+	var xChange = 0.1
+	var yChange = 0
+	
 	function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, 24)
 		
@@ -161,6 +167,9 @@ function init()
 				isIncrementing = true
 			}
 		}
+		
+		//const positionChangeLocation = gl.getUniformLocation(program, "positionChange")
+		//gl.uniform2f(positionChangeLocation, xChange, yChange)
 		
 		requestAnimationFrame(loop)
 	}
