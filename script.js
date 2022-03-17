@@ -131,12 +131,37 @@ function init()
 	)
 	gl.enableVertexAttribArray(colorAttributeLocation)
 	
+	var redValue = 0
+	var greenValue = 0
+	var blueValue = 0
+	var isIncrementing = true
+	
 	function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, 24)
+		
 		// set shader color
 		const colorLocation = gl.getUniformLocation(program, "color")
-
-		gl.uniform3f(colorLocation, Math.random(), Math.random(), Math.random(), 1)
+		gl.uniform3f(colorLocation, redValue, greenValue, blueValue, 1)
+		
+		// update color values and eventually reverse counting 
+		if (isIncrementing) {
+			redValue += 0.01
+			greenValue += 0.01
+			blueValue += 0.01
+			
+			if (redValue >= 1) {
+				isIncrementing = false
+			}		
+		} else if (!isIncrementing) {
+			redValue -= 0.01
+			greenValue -= 0.01
+			blueValue -= 0.01
+			
+			if (redValue <= 0) {	
+				isIncrementing = true
+			}
+		}
+		
 		requestAnimationFrame(loop)
 	}
 	
