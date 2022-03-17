@@ -5,18 +5,20 @@
 const vertexShaderText = 
 	`
 	precision mediump float;
+
 	attribute vec2 vertPos;
-	varying vec4 currentPos;
+	uniform vec2 positionChange;
+
 	attribute vec3 vertColor; // unused at the moment
 	varying vec3 fragColor;
 	uniform vec3 color;
-	uniform vec2 positionChange;
 	
 	void main()
 	{
 		fragColor = color;
-		gl_Position = vec4(vertPos, 0, 1.0);
-		currentPos = gl_Position + positionChange;
+		
+		vec2 newPos = vertPos + positionChange;
+		gl_Position = vec4(newPos, 0, 1.0);
 	}
 	`
 
@@ -44,20 +46,21 @@ function init()
 	const fragShader = gl.createShader(gl.FRAGMENT_SHADER)
 	gl.shaderSource(fragShader, fragmentShaderText)
 	gl.compileShader(fragShader)
+
 	// check for compile errors (not automatic)
 	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) 
 	{
 		console.error("Error compiling vertexShader: ", gl.getShaderInfoLog(vertexShader))
+	}
+	if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS))
+	{
+		console.error("Error compiling fragShader: ", gl.getShaderInfoLog(fragShader))
 	}
 	
 	const program = gl.createProgram()
 	gl.attachShader(program, vertexShader)
 	gl.attachShader(program, fragShader)
 	gl.linkProgram(program)
-	if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS))
-	{
-		console.error("Error compiling fragShader: ", gl.getShaderInfoLog(fragShader))
-	}
 	
 	// x, y, r, g ,b
 	const triangleVertices = 
@@ -137,10 +140,16 @@ function init()
 	var redValue = 0
 	var greenValue = 0
 	var blueValue = 0
-	var isIncrementing = true
+	var isIncrementingColor = true
 	
-	var xChange = 0.1
+	var xChange = 0
 	var yChange = 0
+	var xStep = 0.01
+	var yStep = 0.01
+	var xMax = 0.5 // 0.5 is highest starting x so to stay in bounds only count to 0.5
+	var yMax = 0.3 // 0.7 is highest starting y so to stay in bounds only count to 0.3
+	var isIncrementingX = true
+	var isIncrementingY = true
 	
 	function loop() {
 		gl.drawArrays(gl.TRIANGLES, 0, 24)
@@ -150,27 +159,57 @@ function init()
 		gl.uniform3f(colorLocation, redValue, greenValue, blueValue, 1)
 		
 		// update color values and eventually reverse counting 
-		if (isIncrementing) {
+		if (isIncrementingColor) {
 			redValue += 0.01
 			greenValue += 0.01
 			blueValue += 0.01
 			
 			if (redValue >= 1) {
-				isIncrementing = false
+				isIncrementingColor = false
 			}		
-		} else if (!isIncrementing) {
+		} else if (!isIncrementingColor) {
 			redValue -= 0.01
 			greenValue -= 0.01
 			blueValue -= 0.01
 			
 			if (redValue <= 0) {	
-				isIncrementing = true
+				isIncrementingColor = true
 			}
 		}
 		
-		//const positionChangeLocation = gl.getUniformLocation(program, "positionChange")
-		//gl.uniform2f(positionChangeLocation, xChange, yChange)
-		
+		const positionChangeLocation = gl.getUniformLocation(program, "positionChange")
+		gl.uniform2f(positionChangeLocation, xChange, yChange)
+
+		// bounce left and right
+		if (isIncrementingX) {
+			xChange += xStep
+
+			if (xChange >= xMax) {
+				isIncrementingX = false
+			}
+		} else if (!isIncrementingX) {
+			xChange -= xStep
+
+			if (xChange <= -xMax) {
+				isIncrementingX = true
+			}
+		}
+
+		// bounce up and down
+		if (isIncrementingY) {
+			yChange += yStep
+
+			if (yChange >= yMax) {
+				isIncrementingY = false
+			}
+		} else if (!isIncrementingY) {
+			yChange -= yStep
+
+			if (yChange <= -yMax) {
+				isIncrementingY = true
+			}
+		}
+
 		requestAnimationFrame(loop)
 	}
 	
