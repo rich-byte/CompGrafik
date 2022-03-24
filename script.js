@@ -7,17 +7,21 @@ const vertexShaderText =
 	precision mediump float;
 
 	attribute vec2 vertPos;
-	uniform vec2 positionChange;
+	uniform vec2 positionChange; // disabled
 
-	attribute vec3 vertColor; // unused at the moment
-	varying vec3 fragColor;
-	uniform vec3 color;
+	attribute float vertValue; // position value between 0 and 1
+	varying float vertValueFrag;
+
+	//attribute vec3 vertColor; // unused at the moment
+	//varying vec3 fragColor;
+	//uniform vec3 color;
 	
 	void main()
 	{
-		fragColor = color;
+		//fragColor = color;
+		vertValueFrag = vertValue;
 		
-		vec2 newPos = vertPos + positionChange;
+		vec2 newPos = vertPos; //+ positionChange;
 		gl_Position = vec4(newPos, 0, 1.0);
 	}
 	`
@@ -25,11 +29,13 @@ const vertexShaderText =
 const fragmentShaderText = 
 	`
 	precision mediump float;
-	varying vec3 fragColor;
+	varying float vertValueFrag;
+	uniform vec3 fragColor1;
+	uniform vec3 fragColor2;
 	
 	void main()
 	{
-		gl_FragColor = vec4(fragColor, 1.0);
+		gl_FragColor = vec4(step(0.5, mix(fragColor1, fragColor2, vertValueFrag)), 1.0);
 	}
 	`
 
@@ -66,40 +72,40 @@ function init()
 	const triangleVertices = 
 		[
 		// left quad
-		-0.5, -0.1, 1.0, 0.5, 0.5,
-		-0.5, 0.7, 1.0, 0.5, 0.5,
-		-0.3, -0.1, 1.0, 0.5, 0.5,
+		-0.5, -0.1, 1.0, 0.5, 0.5, 0,
+		-0.5, 0.7, 1.0, 0.5, 0.5, 0,
+		-0.3, -0.1, 1.0, 0.5, 0.5, -0.3/0.5,
 		
-		-0.3, 0.7, 1.0, 0.5, 0.5,
-		-0.3, -0.1, 1.0, 0.5, 0.5,
-		-0.5, 0.7, 1.0, 0.5, 0.5,
+		-0.3, 0.7, 1.0, 0.5, 0.5, -0.3/0.5,
+		-0.3, -0.1, 1.0, 0.5, 0.5, -0.3/0.5,
+		-0.5, 0.7, 1.0, 0.5, 0.5, 0,
 		
 		// right quad
-		0.5, -0.1, 1.0, 0.5, 0.5,
-		0.5, 0.7, 1.0, 0.5, 0.5,
-		0.3, -0.1, 1.0, 0.5, 0.5,
+		0.5, -0.1, 1.0, 0.5, 0.5, 1,
+		0.5, 0.7, 1.0, 0.5, 0.5, 1,
+		0.3, -0.1, 1.0, 0.5, 0.5, 0.3/0.5,
 		
-		0.3, 0.7, 1.0, 0.5, 0.5,
-		0.3, -0.1, 1.0, 0.5, 0.5,
-		0.5, 0.7, 1.0, 0.5, 0.5,
+		0.3, 0.7, 1.0, 0.5, 0.5, 0.3/0.5,
+		0.3, -0.1, 1.0, 0.5, 0.5, 0.3/0.5,
+		0.5, 0.7, 1.0, 0.5, 0.5, 1,
 		
 		// mid quad
-		-0.5, 0.2, 1.0, 0.5, 0.5,
-		-0.5, 0.4, 1.0, 0.5, 0.5,
-		0.5, 0.4, 1.0, 0.5, 0.5,
+		-0.5, 0.2, 1.0, 0.5, 0.5, 0,
+		-0.5, 0.4, 1.0, 0.5, 0.5, 0,
+		0.5, 0.4, 1.0, 0.5, 0.5, 1,
 		
-		0.5, 0.2, 1.0, 0.5, 0.5,
-		-0.5, 0.2, 1.0, 0.5, 0.5,
-		0.5, 0.4, 1.0, 0.5, 0.5,	
+		0.5, 0.2, 1.0, 0.5, 0.5, 1,
+		-0.5, 0.2, 1.0, 0.5, 0.5, 0,
+		0.5, 0.4, 1.0, 0.5, 0.5, 1,
 				
 		// bottom quad
-		-0.5, -0.3, 1.0, 0.5, 0.5,
-		-0.5, -0.5, 1.0, 0.5, 0.5,
-		0.5, -0.5, 1.0, 0.5, 0.5,
+		-0.5, -0.3, 1.0, 0.5, 0.5, 0,
+		-0.5, -0.5, 1.0, 0.5, 0.5, 0,
+		0.5, -0.5, 1.0, 0.5, 0.5, 1,
 		
-		0.5, -0.3, 1.0, 0.5, 0.5,
-		-0.5, -0.3, 1.0, 0.5, 0.5,
-		0.5, -0.5, 1.0, 0.5, 0.5
+		0.5, -0.3, 1.0, 0.5, 0.5, 1,
+		-0.5, -0.3, 1.0, 0.5, 0.5, 0,
+		0.5, -0.5, 1.0, 0.5, 0.5, 1
 		]
 		
 	const triangleVBO = gl.createBuffer()
@@ -122,20 +128,31 @@ function init()
 	2, 
 	gl.FLOAT, 
 	gl.FALSE, 
-	5 * Float32Array.BYTES_PER_ELEMENT,
+	6 * Float32Array.BYTES_PER_ELEMENT,
 	0 * Float32Array.BYTES_PER_ELEMENT)
 	gl.enableVertexAttribArray(positionAttributeLocation)
 		
-	const colorAttributeLocation = gl.getAttribLocation(program, "vertColor")
+	// const colorAttributeLocation = gl.getAttribLocation(program, "vertColor")
+	// gl.vertexAttribPointer(
+	// colorAttributeLocation,
+	// 3,
+	// gl.FLOAT,
+	// gl.FALSE,
+	// 6 * Float32Array.BYTES_PER_ELEMENT,
+	// 2 * Float32Array.BYTES_PER_ELEMENT,
+	// )
+	// gl.enableVertexAttribArray(colorAttributeLocation)
+
+	const vertValueAttributeLocation = gl.getAttribLocation(program, "vertValue")
 	gl.vertexAttribPointer(
-	colorAttributeLocation,
-	3,
-	gl.FLOAT,
-	gl.FALSE,
-	5 * Float32Array.BYTES_PER_ELEMENT,
-	2 * Float32Array.BYTES_PER_ELEMENT,
-	)
-	gl.enableVertexAttribArray(colorAttributeLocation)
+		vertValueAttributeLocation,
+		1, 
+		gl.FLOAT, 
+		gl.FALSE, 
+		6 * Float32Array.BYTES_PER_ELEMENT,
+		5 * Float32Array.BYTES_PER_ELEMENT)
+	gl.enableVertexAttribArray(vertValueAttributeLocation)
+
 	
 	var redValue = 0
 	var greenValue = 0
@@ -155,28 +172,36 @@ function init()
 		gl.drawArrays(gl.TRIANGLES, 0, 24)
 		
 		// set shader color
-		const colorLocation = gl.getUniformLocation(program, "color")
-		gl.uniform3f(colorLocation, redValue, greenValue, blueValue, 1)
+		// const colorLocation = gl.getUniformLocation(program, "color")
+		// gl.uniform3f(colorLocation, redValue, greenValue, blueValue, 1)
+
+		// set actual color
+		const fragColor1Location = gl.getUniformLocation(program, "fragColor1")
+		gl.uniform3f(fragColor1Location, 1, 0, 0)
+
+		const fragColor2Location = gl.getUniformLocation(program, "fragColor2")
+		gl.uniform3f(fragColor2Location, 0, 1, 0)
 		
 		// update color values and eventually reverse counting 
-		if (isIncrementingColor) {
-			redValue += 0.01
-			greenValue += 0.01
-			blueValue += 0.01
+		// if (isIncrementingColor) {
+		// 	redValue += 0.01
+		// 	greenValue += 0.01
+		// 	blueValue += 0.01
 			
-			if (redValue >= 1) {
-				isIncrementingColor = false
-			}		
-		} else if (!isIncrementingColor) {
-			redValue -= 0.01
-			greenValue -= 0.01
-			blueValue -= 0.01
+		// 	if (redValue >= 1) {
+		// 		isIncrementingColor = false
+		// 	}		
+		// } else if (!isIncrementingColor) {
+		// 	redValue -= 0.01
+		// 	greenValue -= 0.01
+		// 	blueValue -= 0.01
 			
-			if (redValue <= 0) {	
-				isIncrementingColor = true
-			}
-		}
+		// 	if (redValue <= 0) {	
+		// 		isIncrementingColor = true
+		// 	}
+		// }
 		
+		// connect positionChange with variables in code
 		const positionChangeLocation = gl.getUniformLocation(program, "positionChange")
 		gl.uniform2f(positionChangeLocation, xChange, yChange)
 
