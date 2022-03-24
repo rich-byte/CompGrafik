@@ -35,7 +35,7 @@ const fragmentShaderText =
 	
 	void main()
 	{
-		gl_FragColor = vec4(smoothstep(0.1, 0.5, mix(fragColor1, fragColor2, vertValueFrag)), 1.0);
+		gl_FragColor = vec4(mix(fragColor1, fragColor2, sin(vertValueFrag * 3.1416 * 4.0) / 2.0 + 0.5), 1.0); // sin(1.0*3.14*5.0)), 1.0); 
 	}
 	`
 
@@ -177,10 +177,10 @@ function init()
 
 		// set actual color
 		const fragColor1Location = gl.getUniformLocation(program, "fragColor1")
-		gl.uniform3f(fragColor1Location, 1, 0, 0)
+		gl.uniform3f(fragColor1Location, 0, 1, 0)
 
 		const fragColor2Location = gl.getUniformLocation(program, "fragColor2")
-		gl.uniform3f(fragColor2Location, 0, 1, 0)
+		gl.uniform3f(fragColor2Location, 1, 0, 0)
 		
 		// update color values and eventually reverse counting 
 		// if (isIncrementingColor) {
