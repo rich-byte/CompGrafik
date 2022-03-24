@@ -35,7 +35,7 @@ const fragmentShaderText =
 	
 	void main()
 	{
-		gl_FragColor = vec4(mix(fragColor1, fragColor2, sin(vertValueFrag * 3.1416 * 4.0) / 2.0 + 0.5), 1.0); // sin(1.0*3.14*5.0)), 1.0); 
+		gl_FragColor = vec4(mix(fragColor1, fragColor2, sin(vertValueFrag * 3.1416 * 10.0) / 0.001), 1.0); 
 	}
 	`
 
