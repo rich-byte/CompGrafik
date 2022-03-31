@@ -21,7 +21,7 @@ const vertexShaderText =
 		//fragColor = color;
 		vertValueFrag = vertValue;
 		
-		vec2 newPos = vertPos; //+ positionChange;
+		vec2 newPos = vertPos; // + positionChange; put in for movement animation
 		gl_Position = vec4(newPos, 0, 1.0);
 	}
 	`
