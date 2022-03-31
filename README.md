@@ -18,3 +18,10 @@ Basic Shader Introduction (good for looking up types of variables, standard vari
 
 OpenGL Shading Language Docu
   https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language
+
+To get autocomplete in VSCode:
+  https://stackoverflow.com/questions/61387725/webgl-autocompletion-in-vs-code
+  e.g.
+  /** @type {WebGLRenderingContext} */
+  const gl = canvas.gl.getContext("webgl")
+
