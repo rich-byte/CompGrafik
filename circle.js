@@ -43,7 +43,8 @@ function init() {
     gl.attachShader(program, fragShader)
     gl.linkProgram(program)
 
-    const vertices = generateCircleVertices(0.0, 0.0, 0.5, 0.1)
+    //const vertices = generateCircleVertices(0.0, 0.0, 0.5, 0.1)
+    const vertices = generateHoleCircleVertices(0.1, 0.5, 0.1)
 
     const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -69,7 +70,7 @@ function init() {
     )
     gl.enableVertexAttribArray(positionAttributeLocation)
 
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, vertices.length / 2)
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 2)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
 }
@@ -88,6 +89,26 @@ function generateCircleVertices(midX, midY, r, step) {
     // push the first value again to finish the circle
     arr.push(arr[2])
     arr.push(arr[3])
+
+    return arr
+}
+
+function generateHoleCircleVertices(rInner, rOuter, step) {
+    const arr = []
+
+    for (let i = 0; i <= 2*Math.PI; i += step) {
+        let x = rInner * Math.cos(i)
+        let y = rInner * Math.sin(i)
+
+        arr.push(x, y)
+
+        x = rOuter * Math.cos(i)
+        y = rOuter * Math.sin(i)
+
+        arr.push(x, y)
+    }
+
+    arr.push(arr[0], arr[1], arr[2], arr[3])
 
     return arr
 }
