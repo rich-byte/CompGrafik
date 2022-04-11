@@ -170,16 +170,15 @@ function init() {
     var angle = 0
     
     function loop() {
-        console.log("hallo")
         angle = performance.now() / 1000 / 6 * 2 * Math.PI
-        glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0,1,0])
-        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1,0,0])
+        glMatrix.mat4.rotateY(yRotationMatrix, identityMatrix, angle)
+        glMatrix.mat4.rotateX(xRotationMatrix, identityMatrix, angle / 4)
 
-        glMatrix.mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix)
+        glMatrix.mat4.multiply(worldMatrix, yRotationMatrix, xRotationMatrix)
         gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
 
-        gl.clearColor(0.1, 0.1, 0.1, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)       
+        gl.clearColor(0.3, 0.3, 0.3, 1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
 
