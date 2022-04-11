@@ -86,7 +86,14 @@ function init() {
 		-1.0, -1.0, -1.0,   0.5, 0.5, 1.0,
 		-1.0, -1.0, 1.0,    0.5, 0.5, 1.0,
 		1.0, -1.0, 1.0,     0.5, 0.5, 1.0,
-		1.0, -1.0, -1.0,    0.5, 0.5, 1.0
+		1.0, -1.0, -1.0,    0.5, 0.5, 1.0,
+
+        // Pyramid
+        0.0, 3.0, 0.0,    0.1, 0.5, 0.9,  // Top
+        0.5, 2.0, 0.5,    0.4, 0.1, 0.7,  // Front Right
+        0.5, 2.0, -0.5,   0.4, 0.1, 0.7,  // Back Right
+        -0.5, 2.0, -0.5,  0.4, 0.1, 0.7,  // Back Left
+        -0.5, 2.0, 0.5,   0.4, 0.1, 0.7,  // Front Left
     ]
 
     var indices = 
@@ -113,7 +120,15 @@ function init() {
 
 		// Bottom
 		21, 20, 22,
-		22, 20, 23
+		22, 20, 23,
+
+        // Pyramid
+        24, 25, 26, // Right
+        24, 26, 27, // Back
+        24, 27, 28, // Left
+        24, 28, 25, // Front
+        25, 27, 26, // Bottom
+        28, 27, 25, // Bottom
     ]
 
     const vbo = vboSetup(gl, vertices)
@@ -154,7 +169,7 @@ function init() {
     var projectionMatrix = new Float32Array(16)
 
     glMatrix.mat4.identity(worldMatrix)
-    glMatrix.mat4.lookAt(viewMatrix, [0,0,-6], [0,0,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
+    glMatrix.mat4.lookAt(viewMatrix, [0,0,-10], [0,1,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
