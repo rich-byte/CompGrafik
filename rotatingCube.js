@@ -38,24 +38,8 @@ function init() {
     /** @type {WebGLRenderingContext} */
     const gl = canvas.getContext("webgl") 
 
-    // shader instantiation
-	const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-	gl.shaderSource(vertexShader, vertexShaderText)
-	gl.compileShader(vertexShader)
-	
-	const fragShader = gl.createShader(gl.FRAGMENT_SHADER)
-	gl.shaderSource(fragShader, fragmentShaderText)
-	gl.compileShader(fragShader)
-    
-	// check for compile errors (not automatic)
-	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) 
-	{
-        console.error("Error compiling vertexShader: ", gl.getShaderInfoLog(vertexShader))
-	}
-	if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS))
-	{
-        console.error("Error compiling fragShader: ", gl.getShaderInfoLog(fragShader))
-	}
+    const vertexShader = initVertexShader(gl, vertexShaderText)
+    const fragShader = initFragShader(gl, fragmentShaderText)
 	
     const program = gl.createProgram()
 	gl.attachShader(program, vertexShader)
@@ -63,9 +47,7 @@ function init() {
 	gl.linkProgram(program)
 
     gl.enable(gl.DEPTH_TEST)
-    // gl.enable(gl.CULL_FACE)
-    // gl.frontFace(gl.CCW)
-    // gl.cullFace(gl.BACK)
+    gl.enable(gl.CULL_FACE)
 	
     // x, y, z, R, G, B
 	const vertices = 
@@ -172,9 +154,8 @@ function init() {
     var projectionMatrix = new Float32Array(16)
 
     glMatrix.mat4.identity(worldMatrix)
-    glMatrix.mat4.lookAt(viewMatrix, [0,0,-8], [0,0,0], [0,1,0])
+    glMatrix.mat4.lookAt(viewMatrix, [0,0,-6], [0,0,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
-
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
     gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)

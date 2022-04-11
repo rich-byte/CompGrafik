@@ -32,3 +32,31 @@ function feedDataToShader(context, program, shaderAttrName) {
     )
     context.enableVertexAttribArray(positionAttributeLocation)
 }
+
+function initVertexShader(context, vertexShaderText) {
+    const vertexShader = context.createShader(context.VERTEX_SHADER)
+    context.shaderSource(vertexShader, vertexShaderText)
+    context.compileShader(vertexShader)
+
+    // check for compile errors (not automatic)
+	if (!context.getShaderParameter(vertexShader, context.COMPILE_STATUS)) 
+	{
+        console.error("Error compiling vertexShader: ", context.getShaderInfoLog(vertexShader))
+	}
+
+    return vertexShader
+}
+
+function initFragShader(context, fragmentShaderText) {
+    const fragShader = context.createShader(context.FRAGMENT_SHADER)
+    context.shaderSource(fragShader, fragmentShaderText)
+    context.compileShader(fragShader)
+
+    // check for compile errors (not automatic)
+	if (!context.getShaderParameter(fragShader, context.COMPILE_STATUS)) 
+	{
+        console.error("Error compiling fragmentShader: ", context.getShaderInfoLog(fragShader))
+	}
+
+    return fragShader
+}
