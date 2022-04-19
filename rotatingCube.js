@@ -168,8 +168,8 @@ function init() {
     var viewMatrix = new Float32Array(16)
     var projectionMatrix = new Float32Array(16)
 
-    glMatrix.mat4.identity(worldMatrix)
-    glMatrix.mat4.lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
+    identity(worldMatrix)
+    // glMatrix.mat4.lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
@@ -180,7 +180,7 @@ function init() {
     var yRotationMatrix = new Float32Array(16)
     
     var identityMatrix = new Float32Array(16)
-    glMatrix.mat4.identity(identityMatrix)
+    identity(identityMatrix)
 
     function drawTower() {
         gl.clearColor(0.3, 0.3, 0.3, 1.0)
@@ -196,12 +196,12 @@ function init() {
         scaleVec3[2] = 10
     
         for (var i = 0; i < 10; i++) {
-            glMatrix.mat4.rotateY(yRotationMatrix, identityMatrix, angle)         // rotate rotationMatrix around y-axis
+            rotateY(yRotationMatrix, identityMatrix, angle)         // rotate rotationMatrix around y-axis
             glMatrix.mat4.multiply(worldMatrix, yRotationMatrix, identityMatrix)  // actually put the rotation into the worldMatrix
     
-            glMatrix.mat4.translate(worldMatrix, worldMatrix, translateVec3)      // translate worldMatrix 
+            translate(worldMatrix, worldMatrix, translateVec3)      // translate worldMatrix 
             
-            glMatrix.mat4.scale(worldMatrix, worldMatrix, scaleVec3)              // scale worldMatrix to be smaller
+            scale(worldMatrix, worldMatrix, scaleVec3)              // scale worldMatrix to be smaller
             gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)   // give new worldMatrix to vertexShader
         
             gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
@@ -222,7 +222,7 @@ function init() {
     var camZ = 0
 
     function loop() {
-        glMatrix.mat4.lookAt(viewMatrix, [Math.sin(camX) * 50, 20, Math.cos(camZ) * 50], [0,5,0], [0,1,0])
+        glMatrix.mat4.lookAt(viewMatrix, [Math.sin(camX) * 40, 40, Math.cos(camZ) * 40], [0,5,0], [0,1,0])
         gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)
 
         drawTower()
