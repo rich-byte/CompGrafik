@@ -89,11 +89,11 @@ function init() {
 		1.0, -1.0, -1.0,    1.0, 0.0, 0.15,
 
         // Pyramid
-        0.0, 3.0, 0.0,    0.1, 0.5, 0.9,  // Top
-        0.5, 2.0, 0.5,    0.4, 0.1, 0.7,  // Front Right
-        0.5, 2.0, -0.5,   0.4, 0.1, 0.7,  // Back Right
-        -0.5, 2.0, -0.5,  0.4, 0.1, 0.7,  // Back Left
-        -0.5, 2.0, 0.5,   0.4, 0.1, 0.7,  // Front Left
+        // 0.0, 3.0, 0.0,    0.1, 0.5, 0.9,  // Top
+        // 0.5, 2.0, 0.5,    0.4, 0.1, 0.7,  // Front Right
+        // 0.5, 2.0, -0.5,   0.4, 0.1, 0.7,  // Back Right
+        // -0.5, 2.0, -0.5,  0.4, 0.1, 0.7,  // Back Left
+        // -0.5, 2.0, 0.5,   0.4, 0.1, 0.7,  // Front Left
     ]
 
     var indices = 
@@ -123,12 +123,12 @@ function init() {
 		22, 20, 23,
 
         // Pyramid
-        24, 25, 26, // Right
-        24, 26, 27, // Back
-        24, 27, 28, // Left
-        24, 28, 25, // Front
-        25, 27, 26, // Bottom
-        28, 27, 25, // Bottom
+        // 24, 25, 26, // Right
+        // 24, 26, 27, // Back
+        // 24, 27, 28, // Left
+        // 24, 28, 25, // Front
+        // 25, 27, 26, // Bottom
+        // 28, 27, 25, // Bottom
     ]
 
     const vbo = vboSetup(gl, vertices)
@@ -169,7 +169,7 @@ function init() {
     var projectionMatrix = new Float32Array(16)
 
     glMatrix.mat4.identity(worldMatrix)
-    glMatrix.mat4.lookAt(viewMatrix, [0,0,-10], [0,1,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
+    glMatrix.mat4.lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
@@ -181,21 +181,54 @@ function init() {
     
     var identityMatrix = new Float32Array(16)
     glMatrix.mat4.identity(identityMatrix)
-        
-    var angle = 0
-    
-    function loop() {
-        angle = performance.now() / 1000 / 6 * 2 * Math.PI
-        glMatrix.mat4.rotateY(yRotationMatrix, identityMatrix, angle)
-        glMatrix.mat4.rotateX(xRotationMatrix, identityMatrix, angle / 4)
 
-        glMatrix.mat4.multiply(worldMatrix, yRotationMatrix, xRotationMatrix)
-        gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
-
+    function drawTower() {
         gl.clearColor(0.3, 0.3, 0.3, 1.0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+            
+        var angle = 0
+    
+        var translateVec3 = new Float32Array(3)
+    
+        var scaleVec3 = new Float32Array(3)
+        scaleVec3[0] = 10
+        scaleVec3[1] = 1
+        scaleVec3[2] = 10
+    
+        for (var i = 0; i < 10; i++) {
+            glMatrix.mat4.rotateY(yRotationMatrix, identityMatrix, angle)         // rotate rotationMatrix around y-axis
+            glMatrix.mat4.multiply(worldMatrix, yRotationMatrix, identityMatrix)  // actually put the rotation into the worldMatrix
+    
+            glMatrix.mat4.translate(worldMatrix, worldMatrix, translateVec3)      // translate worldMatrix 
+            
+            glMatrix.mat4.scale(worldMatrix, worldMatrix, scaleVec3)              // scale worldMatrix to be smaller
+            gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)   // give new worldMatrix to vertexShader
+        
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+    
+            angle += 30
+    
+            if (scaleVec3[0] > 1) {
+                scaleVec3[0] -= 1
+                scaleVec3[2] -= 1
+            }
+    
+            translateVec3[1] += 2
+    
+        }
+    }
+        
+    var camX = 0
+    var camZ = 0
 
-        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+    function loop() {
+        glMatrix.mat4.lookAt(viewMatrix, [Math.sin(camX) * 50, 20, Math.cos(camZ) * 50], [0,5,0], [0,1,0])
+        gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)
+
+        drawTower()
+
+        camX += 0.01
+        camZ += 0.01
 
         requestAnimationFrame(loop)
     }
