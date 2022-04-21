@@ -169,7 +169,7 @@ function init() {
     var projectionMatrix = new Float32Array(16)
 
     identity(worldMatrix)
-    // glMatrix.mat4.lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
+    // lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
@@ -222,7 +222,7 @@ function init() {
     var camZ = 0
 
     function loop() {
-        glMatrix.mat4.lookAt(viewMatrix, [Math.sin(camX) * 40, 40, Math.cos(camZ) * 40], [0,5,0], [0,1,0])
+        lookAt(viewMatrix, [Math.sin(camX) * 40, 40, Math.cos(camZ) * 40], [0,5,0], [0,1,0])
         gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)
 
         drawTower()

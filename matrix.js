@@ -100,3 +100,58 @@ function rotateX(out, inMat, rad) { // untested
     out[14] = inMat[14]
     out[15] = inMat[15]
 }
+
+function lookAt(out, eye, look, up) {
+    // rotation matrix
+    var n = new Float32Array(3)
+    n[0] = eye[0] - look[0]
+    n[1] = eye[1] - look[1]
+    n[2] = eye[2] - look[2]
+    normalize(n, n)
+
+    var u = new Float32Array(3) 
+    crossProductOf(u, up, n)
+    normalize(u, u)
+
+    var v = new Float32Array(3) 
+    crossProductOf(v, n, u)
+    normalize(v, v)
+
+    out[0] = u[0]
+    out[1] = v[0]
+    out[2] = n[0]
+    out[3] = 0
+
+    out[4] = u[1]
+    out[5] = v[1]
+    out[6] = n[1]
+    out[7] = 0
+
+    out[8] = u[2]
+    out[9] = v[2]
+    out[10] = n[2]
+    out[11] = 0
+
+    // transaltion
+    out[12] = -(u[0]*eye[0] + u[1]*eye[1] + u[2]*eye[2])
+    out[13] = -(v[0]*eye[0] + v[1]*eye[1] + v[2]*eye[2])
+    out[14] = -(n[0]*eye[0] + n[1]*eye[1] + n[2]*eye[2])
+    out[15] = 1
+
+    return out
+}
+
+function crossProductOf(out, first, second) { 
+    out[0] = first[1]*second[2] - first[2]*second[1]
+    out[1] = first[2]*second[0] - first[0]*second[2]
+    out[2] = first[0]*second[1] - first[1]*second[0]
+    return out;
+}
+
+function normalize(out, inVec) {
+    const factor = 1/Math.hypot(inVec[0], inVec[1], inVec[2])
+    out[0] = factor * inVec[0]
+    out[1] = factor * inVec[1]
+    out[2] = factor * inVec[2]
+    return inVec 
+}
