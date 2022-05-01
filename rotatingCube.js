@@ -170,7 +170,7 @@ function init() {
 
     identity(worldMatrix)
     // lookAt(viewMatrix, [0,20,-50], [0,5,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
-    glMatrix.mat4.perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
+    perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
     gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)
@@ -197,7 +197,7 @@ function init() {
     
         for (var i = 0; i < 10; i++) {
             rotateY(yRotationMatrix, identityMatrix, angle)         // rotate rotationMatrix around y-axis
-            glMatrix.mat4.multiply(worldMatrix, yRotationMatrix, identityMatrix)  // actually put the rotation into the worldMatrix
+            multiply(worldMatrix, yRotationMatrix, identityMatrix)  // actually put the rotation into the worldMatrix
     
             translate(worldMatrix, worldMatrix, translateVec3)      // translate worldMatrix 
             
