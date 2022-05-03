@@ -41,7 +41,7 @@ async function init() {
         gl.FLOAT,
         gl.FALSE,
         8 * Float32Array.BYTES_PER_ELEMENT,
-        6 * Float32Array.BYTES_PER_ELEMENT
+        5 * Float32Array.BYTES_PER_ELEMENT
     )
     gl.enableVertexAttribArray(colorAttribLocation)
 
@@ -66,7 +66,7 @@ async function init() {
     gl.uniformMatrix4fv(viewMatUniformLocation, gl.FALSE, viewMatrix)
     gl.uniformMatrix4fv(projectionMatUniformLocation, gl.FALSE, projectionMatrix)
 
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 8 - 1) // why minus 1? this just takes the length / 8 which should be even (and is)
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 8) 
 
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
 }
