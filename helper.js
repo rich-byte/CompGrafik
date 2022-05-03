@@ -6,6 +6,64 @@ async function getFileText(url) {
     return text
 }
 
+async function getDataFromObj(url) {
+    let text = await getFileText(url)
+    let lineList = text.split(/\r*\n/)
+
+    var vList = [] // 3-4 elemnts per vertex x,y,z(,w)
+    var vtList = [] // 1-3 elements per texture coordinate u(,v,w)
+    var vnList = [] // 3 elements per vertex normal x,y,z
+    var fList = [] // TODO: should vbo?
+    
+    lineList.forEach(line => {
+        let splitLine = line.trim().split(/\s+/)
+        switch (splitLine.shift()) {
+            case "v":
+                addSplitLineToList(splitLine, vList)
+                break;
+            case "vn":
+                addSplitLineToList(splitLine, vnList)
+                break;
+            case "vt":
+                addSplitLineToList(splitLine, vtList)
+                break;
+            case "f":
+                splitLine.forEach(element => {
+                    let indices = element.split("/") // second / needed here?
+                    let index = parseInt(indices[0]) - 1
+                    vList[index].forEach(coord => {
+                        fList.push(coord)
+                    });
+                    
+                    vtList[parseInt(indices[1]) - 1].forEach(coord => {
+                        fList.push(coord)
+                    });
+
+                    vnList[parseInt(indices[2]) - 1].forEach(coord => {
+                        fList.push(coord)
+                    });
+                });
+                break;
+            default:
+                break;
+        }
+    });
+
+    return fList
+}
+
+function addSplitLineToList(line, list) {
+    for (let i = 0; i < line.length; i++) {
+        line[i] = parseFloat(line[i])
+    }
+
+    // if (splitLine.length == 3) { // add default w if only x,y,z were given
+    //     splitLine.push(1.0)
+    // }
+
+    list.push(line)
+}
+
 function vboSetup(context, vertices) {
     let vbo = context.createBuffer()
     context.bindBuffer(context.ARRAY_BUFFER, vbo)
