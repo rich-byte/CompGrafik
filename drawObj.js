@@ -19,7 +19,7 @@ async function init() {
     gl.enable(gl.DEPTH_TEST)
     gl.enable(gl.CULL_FACE)
 
-    const vertices = await getDataFromObj("http://127.0.0.1:5500/teapot.obj")
+    const vertices = await getDataFromObj("http://127.0.0.1:5500/helmet.obj")
     const vbo = vboSetup(gl, vertices)
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
@@ -59,7 +59,7 @@ async function init() {
     var projectionMatrix = new Float32Array(16)
 
     identity(worldMatrix)
-    lookAt(viewMatrix, [-10,0,0], [0,0,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
+    lookAt(viewMatrix, [10,10,40], [0,10,0], [0,1,0]) // first is Eye -> cam pos; second is Look -> point to look at; third is Up -> vertical from cam
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
 
     gl.uniformMatrix4fv(worldMatUniformLocation, gl.FALSE, worldMatrix)
