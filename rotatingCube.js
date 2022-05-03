@@ -1,39 +1,9 @@
 'use strict';
 
-var vertexShaderText = 
-[
-    `
-    precision mediump float;
+async function init() {
+    let vertexShaderText = await getFileText("http://127.0.0.1:5500/vertexShader")
+    let fragmentShaderText = await getFileText("http://127.0.0.1:5500/fragmentShader")
 
-    attribute vec3 vertPos;
-    attribute vec3 vertColor;
-    varying vec3 fragColor;
-
-    uniform mat4 worldMat;
-    uniform mat4 viewMat;
-    uniform mat4 projectionMat;
-
-    void main() {
-        fragColor = vertColor;
-        gl_Position = projectionMat * viewMat * worldMat * vec4(vertPos, 1.0);
-    }
-    `
-]
-
-var fragmentShaderText = 
-[
-    `
-    precision mediump float;
-	varying vec3 fragColor;
-	
-	void main()
-	{
-		gl_FragColor = vec4(fragColor, 1.0); 
-	}
-    `
-]
-
-function init() {
     const canvas = document.getElementById("cg1")
     /** @type {WebGLRenderingContext} */
     const gl = canvas.getContext("webgl") 

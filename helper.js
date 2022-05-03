@@ -1,5 +1,11 @@
 'use strict';
 
+async function getFileText(url) {
+    let response = await fetch(url)
+    let text = await response.text()
+    return text
+}
+
 function vboSetup(context, vertices) {
     let vbo = context.createBuffer()
     context.bindBuffer(context.ARRAY_BUFFER, vbo)

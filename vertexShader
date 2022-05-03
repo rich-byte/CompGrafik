@@ -1,0 +1,14 @@
+precision mediump float;
+
+attribute vec3 vertPos;
+attribute vec3 vertColor;
+varying vec3 fragColor;
+
+uniform mat4 worldMat;
+uniform mat4 viewMat;
+uniform mat4 projectionMat;
+
+void main() {
+    fragColor = vertColor;
+    gl_Position = projectionMat * viewMat * worldMat * vec4(vertPos, 1.0);
+}
