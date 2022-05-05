@@ -124,3 +124,15 @@ function initFragShader(context, fragmentShaderText) {
 
     return fragShader
 }
+
+
+/**
+ * RGB normalized to [0,1]
+ * @param {Float} r  
+ * @param {Float} g 
+ * @param {Float} b 
+ * @returns H in [0,360]° and S and V in [0,1]
+ */
+function rgbToHsv(r, g, b) {
+    
+}
