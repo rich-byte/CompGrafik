@@ -2,13 +2,19 @@ precision mediump float;
 
 attribute vec3 vertPos;
 attribute vec3 vertColor;
+attribute vec3 normal;
 varying vec3 fragColor;
+varying vec3 Position;
+varying vec3 Normal;
 
 uniform mat4 worldMat;
 uniform mat4 viewMat;
 uniform mat4 projectionMat;
+uniform mat3 normalMat;
 
 void main() {
     fragColor = vertColor;
+    Normal = normalize(normalMat * normal);
+    Position = vertPos; //vertPos.xyz / vertPos.w;
     gl_Position = projectionMat * viewMat * worldMat * vec4(vertPos, 1.0);
 }

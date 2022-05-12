@@ -251,3 +251,57 @@ function multiply(out, a, b) {
 
     return out
 }
+
+
+// 00, 01, 02
+// 03, 04, 05
+// 06, 07, 08
+function inverse3x3(out, inMat) {
+    let in00 = inMat[0]
+    let in01 = inMat[3]
+    let in02 = inMat[6]
+    let in03 = inMat[1]
+    let in04 = inMat[4]
+    let in05 = inMat[7]
+    let in06 = inMat[2]
+    let in07 = inMat[5]
+    let in08 = inMat[8]
+
+    let d00 = in04*in08 - in05*in07
+    let d01 = -1.0*(in03*in08 - in05*in06) 
+    let d02 = in03*in07 - in04*in06
+    let d03 = -1.0*(in01*in08 - in02*in07)
+    let d04 = in00*in08 - in02*in06
+    let d05 = -1.0*(in00*in07 - in01*in06)
+    let d06 = in01*in05 - in02*in04
+    let d07 = -1.0*(in00*in05 - in02*in03)
+    let d08 = in00*in04 - in01*in03
+
+    let d = 1.0/(in00*d00 + in01*d01 + in02*d02)
+
+    out[0] = d*d00
+    out[1] = d*d01
+    out[2] = d*d02
+    out[3] = d*d03
+    out[4] = d*d04
+    out[5] = d*d05
+    out[6] = d*d06
+    out[7] = d*d07
+    out[8] = d*d08
+     
+    return out
+}
+
+function transpose(out, inMat){
+    out[0] = inMat[0]
+    out[1] = inMat[3]
+    out[2] = inMat[6]
+    out[3] = inMat[1]
+    out[4] = inMat[4]
+    out[5] = inMat[7]
+    out[6] = inMat[2]
+    out[7] = inMat[5]
+    out[8] = inMat[8]
+
+    return out
+}
