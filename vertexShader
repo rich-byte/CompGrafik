@@ -14,6 +14,6 @@ uniform mat3 normalMat;
 
 void main() {
     Normal = normalize(normalMat * v_Normal);
-    Position = vec3(worldMat * viewMat * vec4(vertPos, 1.0)); 
+    Position = vec3(viewMat * worldMat * vec4(vertPos, 1.0)); 
     gl_Position = projectionMat * viewMat * worldMat * vec4(vertPos, 1.0);
 }

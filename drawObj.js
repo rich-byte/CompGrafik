@@ -53,11 +53,11 @@ async function init() {
 	gl.clear(gl.COLOR_BUFFER_BIT)
 
     // fragment uniforms for Material and Light
-    var lightPositonUniformLocation = gl.getUniformLocation(program, "lightPositon");
+    var lightPositonUniformLocation = gl.getUniformLocation(program, "lightPosition");
     var lightPositon = new Float32Array(4);
-    lightPositon[0] = 2.0;
-    lightPositon[1] = 2.0;
-    lightPositon[2] = 1.0;
+    lightPositon[0] = 0.0;
+    lightPositon[1] = 5.0;
+    lightPositon[2] = 0.0;
     lightPositon[3] = 1.0;
 
     var lightAmbientUniformLocation = gl.getUniformLocation(program, "lightAmbient");
@@ -98,7 +98,7 @@ async function init() {
     var materialAmbient = new Float32Array(4)
     materialAmbient[0] = 0.0;
     materialAmbient[1] = 1.0;
-    materialAmbient[2] = 0.0;
+    materialAmbient[2] = 1.0;
     materialAmbient[3] = 1.0;
 
     var materialDiffuseUniformLocation = gl.getUniformLocation(program, "materialDiffuse");
