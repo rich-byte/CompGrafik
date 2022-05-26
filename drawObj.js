@@ -62,9 +62,9 @@ async function init() {
 
     var lightAmbientUniformLocation = gl.getUniformLocation(program, "lightAmbient");
     var lightAmbient = new Float32Array(4)
-    lightAmbient[0] = 0.2;
-    lightAmbient[1] = 0.2;
-    lightAmbient[2] = 0.2;
+    lightAmbient[0] = 0.7;
+    lightAmbient[1] = 0.7;
+    lightAmbient[2] = 0.8;
     lightAmbient[3] = 1.0;
 
     var lightDiffuseUniformLocation = gl.getUniformLocation(program, "lightDiffuse");
@@ -96,27 +96,27 @@ async function init() {
 
     var materialAmbientUniformLocation = gl.getUniformLocation(program, "materialAmbient");
     var materialAmbient = new Float32Array(4)
-    materialAmbient[0] = 0.0;
+    materialAmbient[0] = 1.0;
     materialAmbient[1] = 1.0;
     materialAmbient[2] = 1.0;
     materialAmbient[3] = 1.0;
 
     var materialDiffuseUniformLocation = gl.getUniformLocation(program, "materialDiffuse");
     var materialDiffuse = new Float32Array(4)
-    materialDiffuse[0] = 0.4;
-    materialDiffuse[1] = 0.8;
-    materialDiffuse[2] = 0.4;
+    materialDiffuse[0] = 0.3;
+    materialDiffuse[1] = 0.3;
+    materialDiffuse[2] = 0.3;
     materialDiffuse[3] = 1.0;
 
     var materialSpecularUniformLocation = gl.getUniformLocation(program, "materialSpecular");
     var materialSpecular = new Float32Array(4)
-    materialSpecular[0] = 0.0;
-    materialSpecular[1] = 0.4;
-    materialSpecular[2] = 0.4;
+    materialSpecular[0] = 0.8;
+    materialSpecular[1] = 0.8;
+    materialSpecular[2] = 0.8;
     materialSpecular[3] = 1.0;
 
     var materialShininessUniformLocation = gl.getUniformLocation(program, "materialShininess");
-    var materialShininess = 300.0
+    var materialShininess = 100.0
 
     var worldMatUniformLocation = gl.getUniformLocation(program, "worldMat")
     var viewMatUniformLocation = gl.getUniformLocation(program, "viewMat")

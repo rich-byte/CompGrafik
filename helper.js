@@ -52,6 +52,48 @@ async function getDataFromObj(url) {
     return fList
 }
 
+function loadTexture(gl, url) {
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+
+    // make texture with one pixel to allow texture to load
+    const level = 0
+    const internalFormat = gl.RGBA
+    const width = 1
+    const height = 1
+    const border = 0
+    const srcFormat = gl.RGBA
+    const srcType = gl.UNSIGNED_BYTE
+    const pixel = new Uint8Array([0, 0, 255, 255])
+    gl.texImage2D(gl.TEXTURE_2D,
+        level, 
+        internalFormat,
+        width,
+        height,
+        border,
+        srcFormat,
+        srcType,
+        pixel)
+    
+    // attach and load real texture
+    const image = new Image()
+    image.onload = function() {
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        gl.texImage2D(gl.TEXTURE_2D, 
+            level, 
+            internalFormat, 
+            srcFormat, 
+            srcType, 
+            image)
+        
+        gl.generateMipmap(gl.TEXTURE_2D)
+
+    }
+    image.src = url
+
+    return texture
+}
+
 function addSplitLineToList(line, list) {
     for (let i = 0; i < line.length; i++) {
         line[i] = parseFloat(line[i])
