@@ -1,22 +1,31 @@
 function init() {
     let vertexShaderText = `
-        precision mediump float;
+        precision highp float;
 
         attribute vec3 vertPos;
+        attribute vec2 vertTexCoord;
         
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
+        
+        varying vec2 texCoord;
 
         void main() {
             gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+            texCoord = vertTexCoord;
         }
     `
 
     let fragmentShaderText = `
-        precision mediump float;
+        precision highp float;
+
+        varying vec2 texCoord;
+        
+        uniform sampler2D inTexture;
 
         void main() {
-            gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            // gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+            gl_FragColor = texture2D(inTexture, texCoord);
         }
     `
 
@@ -113,10 +122,25 @@ function init() {
     )
     gl.enableVertexAttribArray(positionAttribLocation)
 
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord')
+    gl.vertexAttribPointer(
+        texCoordAttribLocation,
+        2,
+        gl.FLOAT,
+        gl.FALSE,
+        5 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT
+    )
+    gl.enableVertexAttribArray(texCoordAttribLocation)
+
     gl.useProgram(program)
 
+    
     var modelViewMatrixtUniformLocation = gl.getUniformLocation(program, "modelViewMatrix")
     var projectionMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix")
+    var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
+    
+    var texture = loadTexture(gl, 'Texture.png')
 
     var worldMatrix = new Float32Array(16)
     var viewMatrix = new Float32Array(16)
@@ -130,13 +154,19 @@ function init() {
 
     gl.uniformMatrix4fv(modelViewMatrixtUniformLocation, gl.FALSE, modelViewMatrix)
     gl.uniformMatrix4fv(projectionMatrixUniformLocation, gl.FALSE, projectionMatrix)
+    gl.uniform1i(inTextureUniformLocation, 0)
 
     gl.enable(gl.DEPTH_TEST)
     gl.enable(gl.CULL_FACE)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+    function draw() {
+        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+        requestAnimationFrame(draw)
+    }
+
+    requestAnimationFrame(draw)
 }
 
 window.onload = init
