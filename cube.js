@@ -1,4 +1,4 @@
-function init() {
+async function init() {
     let vertexShaderText = `
         precision highp float;
 
@@ -140,7 +140,7 @@ function init() {
     var projectionMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix")
     var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
     
-    var texture = loadTexture(gl, 'Texture.png')
+    var texture = await loadTexture(gl, 'Texture.png')
 
     var worldMatrix = new Float32Array(16)
     var viewMatrix = new Float32Array(16)
@@ -148,7 +148,7 @@ function init() {
     var modelViewMatrix = new Float32Array(16)
 
     identity(worldMatrix)
-    lookAt(viewMatrix, [3.0, 3.0, -5.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0])
+    lookAt(viewMatrix, [-8.0, 3.0, -8.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0])
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, worldMatrix)
 
@@ -160,8 +160,32 @@ function init() {
     gl.enable(gl.CULL_FACE)
     gl.clearColor(0.2, 0.2, 0.2, 1.0)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+    
+    // second cube
+    translateVec = new Float32Array(3)
+    translateVec[0] = -3
+    translatedWorldMatrix = worldMatrix
+    translate(translatedWorldMatrix, worldMatrix, translateVec)
+    multiply(translatedWorldMatrix, viewMatrix, translatedWorldMatrix)
 
+    const textureVid = gl.createTexture()
+    const video = await setupVideo('video')
+    gl.bindTexture(gl.TEXTURE_2D, textureVid)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0,0,255,255]))
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video)
+
+    
     function draw() {
+        gl.uniformMatrix4fv(modelViewMatrixtUniformLocation, gl.FALSE, modelViewMatrix)
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+
+        gl.uniformMatrix4fv(modelViewMatrixtUniformLocation, gl.FALSE, translatedWorldMatrix)
+        gl.bindTexture(gl.TEXTURE_2D, textureVid)
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video)
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
         requestAnimationFrame(draw)
     }

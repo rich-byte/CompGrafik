@@ -52,7 +52,39 @@ async function getDataFromObj(url) {
     return fList
 }
 
-function loadTexture(gl, url) {
+async function setupVideo(id) {
+    const video = document.getElementById(id)
+    var playing = false
+    var timeUpdate = false
+    var copyVideo = false
+
+    video.autoplay = true
+    video.muted = true
+    video.loop = true
+
+    video.addEventListener('playing', function() {
+        playing = true
+        checkReady()
+    }, true)
+
+    video.addEventListener('timeupdate', function() {
+        timeUpdate = true
+        checkReady()
+    }, true)
+
+    video.play()
+
+    function checkReady() {
+        if( playing && timeUpdate){
+            copyVideo = true
+        }
+    }
+
+    return video
+}
+
+
+async function loadTexture(gl, url) {
     const texture = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, texture)
 
