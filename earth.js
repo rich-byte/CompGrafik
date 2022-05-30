@@ -3,18 +3,29 @@ async function init() {
         precision mediump float;
 
         attribute vec3 vertPos;
+        attribute vec2 vertTexCoord;
 
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
 
+        varying vec2 texCoord;
+
         void main(){
             gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+            texCoord = vertTexCoord;
         }
     `
 
     let fragmentShaderText = `
+        precision mediump float;
+
+        varying vec2 texCoord;
+
+        uniform sampler2D inTexture;
+
         void main() {
-            gl_FragColor = vec4(0,0.7,0,1);
+            // gl_FragColor = vec4(0,0.7,0,1);
+            gl_FragColor = texture2D(inTexture, texCoord);
         }
     `
     const canvas = document.getElementById("cg1")
@@ -47,6 +58,17 @@ async function init() {
         )
     gl.enableVertexAttribArray(positionAttribLocation)
 
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord')
+    gl.vertexAttribPointer(
+        texCoordAttribLocation,
+        2,
+        gl.FLOAT,
+        gl.FALSE,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT
+    )
+    gl.enableVertexAttribArray(texCoordAttribLocation)
+
     gl.useProgram(program)
         
     var modelMatrix = new Float32Array(16)
@@ -68,6 +90,10 @@ async function init() {
     var identityMatrix = new Float32Array(16)
     identity(identityMatrix)
 
+    // texture setup
+    var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
+    gl.uniform1i(inTextureUniformLocation, 0)
+    var texture = await loadTexture(gl, 'earth_day.png')
 
     gl.clearColor(0.2, 0.2, 0.2, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
@@ -76,25 +102,17 @@ async function init() {
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
     
     var angle = 0
-    var camX = 0
-    var camZ = 0
 
     function draw() {
-        // lookAt(viewMatrix, [Math.sin(camX) * 40, 40, Math.cos(camZ) * 40], [0,0,0], [0,1,0])
-
         gl.clearColor(0.2, 0.2, 0.2, 1.0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-        // rotateY(modelViewMatrix, modelViewMatrix, angle)
 
         rotateY(yRotationMatrix, identityMatrix, angle)
         multiply(modelMatrix, yRotationMatrix, identityMatrix)
         multiply(modelViewMatrix, viewMatrix, modelMatrix)
         gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
 
-        angle += 0.01
-        camX += 0.01
-        camZ += 0.01
+        angle += 0.003
 
         gl.drawArrays(gl.TRIANGLES, 0, earthObj.length / 8)
 
