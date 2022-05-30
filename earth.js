@@ -3,18 +3,27 @@ async function init() {
         precision mediump float;
 
         attribute vec3 vertPos;
+        attribute vec2 vertTex;
 
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
 
+        varying vec2 textureCoord;
+
         void main(){
             gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+            textureCoord = vertTex;
         }
     `
 
     let fragmentShaderText = `
+        precision mediump float;
+
+        varying vec2 textureCoord;
+
+        uniform sampler2D uSampler;
         void main() {
-            gl_FragColor = vec4(0,0.7,0,1);
+            gl_FragColor = texture2D(uSampler, textureCoord);
         }
     `
     const canvas = document.getElementById("cg1")
@@ -35,6 +44,10 @@ async function init() {
     
     const vbo = vboSetup(gl, earthObj)
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+
+    const texture = await loadTexture(gl, "earth_day.png")
+    const textureCoordBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer)
     
     var positionAttribLocation = gl.getAttribLocation(program, "vertPos")
     gl.vertexAttribPointer(
@@ -46,6 +59,17 @@ async function init() {
         0 * Float32Array.BYTES_PER_ELEMENT
         )
     gl.enableVertexAttribArray(positionAttribLocation)
+
+    var texCoordAttribLocation = gl.getAttribLocation(program, "vertTex")
+    gl.vertexAttribPointer(
+        texCoordAttribLocation,
+        2,
+        gl.FLOAT,
+        gl.FALSE,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT
+    )
+    gl.enableVertexAttribArray(texCoordAttribLocation)
 
     gl.useProgram(program)
         
@@ -59,10 +83,15 @@ async function init() {
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, modelMatrix)
 
+    gl.activeTexture(gl.TEXTURE0)
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+
     const modelViewLocation = gl.getUniformLocation(program, "modelViewMatrix")
     const projLocation = gl.getUniformLocation(program, "projMatrix")
+    const samplerLocation = gl.getUniformLocation(program, "uSampler")
     gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
     gl.uniformMatrix4fv(projLocation, gl.FALSE, projectionMatrix)
+    gl.uniform1i(samplerLocation, 0)
     
     var yRotationMatrix = new Float32Array(16)
     var identityMatrix = new Float32Array(16)
