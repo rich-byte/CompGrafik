@@ -123,6 +123,8 @@ async function loadTexture(gl, url) {
     }
     image.src = url
 
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // flip texture
+
     return texture
 }
 

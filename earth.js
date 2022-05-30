@@ -3,27 +3,29 @@ async function init() {
         precision mediump float;
 
         attribute vec3 vertPos;
-        attribute vec2 vertTex;
+        attribute vec2 vertTexCoord;
 
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
 
-        varying vec2 textureCoord;
+        varying vec2 texCoord;
 
         void main(){
             gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
-            textureCoord = vertTex;
+            texCoord = vertTexCoord;
         }
     `
 
     let fragmentShaderText = `
         precision mediump float;
 
-        varying vec2 textureCoord;
+        varying vec2 texCoord;
 
-        uniform sampler2D uSampler;
+        uniform sampler2D inTexture;
+
         void main() {
-            gl_FragColor = texture2D(uSampler, textureCoord);
+            // gl_FragColor = vec4(0,0.7,0,1);
+            gl_FragColor = texture2D(inTexture, texCoord);
         }
     `
     const canvas = document.getElementById("cg1")
@@ -44,10 +46,6 @@ async function init() {
     
     const vbo = vboSetup(gl, earthObj)
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
-
-    const texture = await loadTexture(gl, "earth_day.png")
-    const textureCoordBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer)
     
     var positionAttribLocation = gl.getAttribLocation(program, "vertPos")
     gl.vertexAttribPointer(
@@ -60,7 +58,7 @@ async function init() {
         )
     gl.enableVertexAttribArray(positionAttribLocation)
 
-    var texCoordAttribLocation = gl.getAttribLocation(program, "vertTex")
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord')
     gl.vertexAttribPointer(
         texCoordAttribLocation,
         2,
@@ -83,20 +81,19 @@ async function init() {
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, modelMatrix)
 
-    gl.activeTexture(gl.TEXTURE0)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-
     const modelViewLocation = gl.getUniformLocation(program, "modelViewMatrix")
     const projLocation = gl.getUniformLocation(program, "projMatrix")
-    const samplerLocation = gl.getUniformLocation(program, "uSampler")
     gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
     gl.uniformMatrix4fv(projLocation, gl.FALSE, projectionMatrix)
-    gl.uniform1i(samplerLocation, 0)
     
     var yRotationMatrix = new Float32Array(16)
     var identityMatrix = new Float32Array(16)
     identity(identityMatrix)
 
+    // texture setup
+    var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
+    gl.uniform1i(inTextureUniformLocation, 0)
+    var texture = await loadTexture(gl, 'earth_day.png')
 
     gl.clearColor(0.2, 0.2, 0.2, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
@@ -105,25 +102,17 @@ async function init() {
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
     
     var angle = 0
-    var camX = 0
-    var camZ = 0
 
     function draw() {
-        // lookAt(viewMatrix, [Math.sin(camX) * 40, 40, Math.cos(camZ) * 40], [0,0,0], [0,1,0])
-
         gl.clearColor(0.2, 0.2, 0.2, 1.0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-        // rotateY(modelViewMatrix, modelViewMatrix, angle)
 
         rotateY(yRotationMatrix, identityMatrix, angle)
         multiply(modelMatrix, yRotationMatrix, identityMatrix)
         multiply(modelViewMatrix, viewMatrix, modelMatrix)
         gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
 
-        angle += 0.01
-        camX += 0.01
-        camZ += 0.01
+        angle += 0.003
 
         gl.drawArrays(gl.TRIANGLES, 0, earthObj.length / 8)
 
