@@ -83,7 +83,6 @@ async function setupVideo(id) {
     return video
 }
 
-
 async function loadTexture(gl, url) {
     const texture = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, texture)

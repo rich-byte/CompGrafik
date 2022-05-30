@@ -140,7 +140,7 @@ async function init() {
     var projectionMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix")
     var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
     
-    var texture = await loadTexture(gl, 'Texture.png')
+    var texture = await loadTexture(gl, 'Texture.png', gl.TEXTURE_2D)
 
     var worldMatrix = new Float32Array(16)
     var viewMatrix = new Float32Array(16)
