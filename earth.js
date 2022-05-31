@@ -31,21 +31,39 @@ async function init() {
 
         uniform sampler2D inTexture;
         uniform sampler2D nightTexture;
+        uniform sampler2D specTexture;
+        uniform sampler2D cloudTexture;
 
         uniform vec4 lightPosition; 
+        uniform float matShininess;
+        // uniform vec4 matSpec;       // new
+        // uniform vec4 lightSpec;     // new
+
+
         // uniform vec4 lightDiffuse; 
 
         void main() {
             vec3 N = normalize(Normal);
             vec3 L = vec3(0.0);
+            vec3 H = vec3(0.0);
             
             L = normalize(vec3(lightPosition) - Position);
             float diffuseLight = max(dot(N, L), 0.0);
+            vec4 specular = vec4(0.0, 0.0, 0.0, 1.0);
+            vec3 posEye = vec3(0.0, 0.0, 1.0);
+            H = normalize(L + posEye);
 
+            if (diffuseLight > 0.0) {
+                float specLight = pow(max(dot(H, N), 0.0), matShininess);
+                specular = specLight * texture2D(specTexture, texCoord);
+            }
+            
             vec4 dayColor = texture2D(inTexture, texCoord);
-            vec4 nightColor = texture2D(nightTexture, texCoord);            
-            gl_FragColor = mix(nightColor, dayColor, diffuseLight);
-            // gl_FragColor = vec4(diffuseLight, diffuseLight, diffuseLight, 1.0);
+            vec4 nightColor = texture2D(nightTexture, texCoord);
+            vec4 cloudColor = texture2D(cloudTexture, texCoord);            
+            // gl_FragColor = mix(nightColor, dayColor, diffuseLight) + specular;
+            gl_FragColor = mix(mix(nightColor, dayColor, diffuseLight), cloudColor, cloudColor.r) + specular;
+            // gl_FragColor = vec4(cloudColor.a);
         }
     `
     const canvas = document.getElementById("cg1")
@@ -144,26 +162,30 @@ async function init() {
     lightPosition[2] = 4.0
     lightPosition[3] = 1.0
 
-    var lightDiffuse = new Float32Array(4)
-    lightDiffuse[0] = 0.5
-    lightDiffuse[1] = 0.5
-    lightDiffuse[2] = 0.5
-    lightDiffuse[3] = 1.0
+    var materialShininess = 1000.0
 
     const lightPositonUniformLocation = gl.getUniformLocation(program, 'lightPosition')
-    const lightDiffuseUniformLocation = gl.getUniformLocation(program, 'lightDiffuse')
+    var materialShininessUniformLocation = gl.getUniformLocation(program, "matShininess");
     gl.uniform4fv(lightPositonUniformLocation, lightPosition)
-    gl.uniform4fv(lightDiffuseUniformLocation, lightDiffuse)
-
+    gl.uniform1f(materialShininessUniformLocation, materialShininess)
 
     // texture setup
     var inTextureUniformLocation = gl.getUniformLocation(program, 'inTexture')
     gl.uniform1i(inTextureUniformLocation, 0)
     var nightTextureUniformLocation = gl.getUniformLocation(program, 'nightTexture')
     gl.uniform1i(nightTextureUniformLocation, 1)
+    var specTextureUniformLocation = gl.getUniformLocation(program, 'specTexture')
+    gl.uniform1i(specTextureUniformLocation, 2)
+    var cloudTextureUniformLocation = gl.getUniformLocation(program, 'cloudTexture')
+    gl.uniform1i(cloudTextureUniformLocation, 3)
+    gl.activeTexture(gl.TEXTURE0)
     var texture = await loadTexture(gl, 'earth_day.png')
     gl.activeTexture(gl.TEXTURE1)
     var nightTexture = await loadTexture(gl, 'earth_night.png')
+    gl.activeTexture(gl.TEXTURE2)
+    var oceanTexture = await loadTexture(gl, 'earth_ocean_mask.png')
+    gl.activeTexture(gl.TEXTURE3)
+    var cloudTexture = await loadTexture(gl, 'earth_clouds.png')
 
     gl.clearColor(0.2, 0.2, 0.2, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
