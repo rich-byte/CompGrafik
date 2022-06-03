@@ -8,7 +8,10 @@ async function init() {
         varying vec3 position;
 
         void main(){
-            gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+            vec3 vPos = (modelViewMatrix * vec4(vertPos, 0.0)).xyz;
+            gl_Position = projMatrix * vec4(vPos, 1.0);
+
+            // gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0); // working
             position = vertPos;
         }
     `
@@ -20,7 +23,6 @@ async function init() {
         uniform samplerCube texture;
 
         void main() {
-            // gl_FragColor = vec4(0,0.7,0,1);
             gl_FragColor = textureCube(texture, position);
         }
     `
@@ -37,6 +39,7 @@ async function init() {
 
     gl.enable(gl.DEPTH_TEST)
     gl.enable(gl.CULL_FACE)
+    gl.cullFace(gl.FRONT)
 
     const vertices = [
         // pos(x,y,z)
@@ -128,6 +131,7 @@ async function init() {
 
     identity(modelMatrix)
     lookAt(viewMatrix, [0,0,-5], [0,0,0], [0,1,0])
+    // lookAt(viewMatrix, [0,0,-0.1], [0,0,0], [0,1,0]) // working
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, modelMatrix)
 
@@ -145,11 +149,11 @@ async function init() {
     gl.uniform1i(textureUniformLocation, 0)
     var texture = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture)
-    var leftTexture = await loadTexture(gl, 'skybox/left.jpg', gl.TEXTURE_CUBE_MAP_POSITIVE_X)
-    var rightTexture = await loadTexture(gl, 'skybox/right.jpg', gl.TEXTURE_CUBE_MAP_NEGATIVE_X)
+    var leftTexture = await loadTexture(gl, 'skybox/right.jpg', gl.TEXTURE_CUBE_MAP_POSITIVE_X)
+    var rightTexture = await loadTexture(gl, 'skybox/left.jpg', gl.TEXTURE_CUBE_MAP_NEGATIVE_X)
     var topTexture = await loadTexture(gl, 'skybox/top.jpg', gl.TEXTURE_CUBE_MAP_POSITIVE_Y)
     var botTexture = await loadTexture(gl, 'skybox/bottom.jpg', gl.TEXTURE_CUBE_MAP_NEGATIVE_Y)
-    var frontTexture = await loadTexture(gl, 'skybox/front.jpg', gl.TEXTURE_CUBE_MAP_POSITIVE_Z)
+    var frontTexture = await loadTexture(gl, "skybox/front.jpg", gl.TEXTURE_CUBE_MAP_POSITIVE_Z)
     var backTexture = await loadTexture(gl, 'skybox/back.jpg', gl.TEXTURE_CUBE_MAP_NEGATIVE_Z)
 
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
@@ -175,11 +179,10 @@ async function init() {
         multiply(modelViewMatrix, viewMatrix, modelMatrix)
         gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
 
-        angle += 0.01
+        angle += 0.005
         camX += 0.01
         camZ += 0.01
 
-        // gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 8)
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
 
         requestAnimationFrame(draw)
