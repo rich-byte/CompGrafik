@@ -127,6 +127,35 @@ async function loadTexture(gl, url) {
     return texture
 }
 
+// returns a promise, so one can wait for the image to load before using it
+async function loadTexture(gl, url, glTarget) {
+    const texture = gl.createTexture()
+    // gl.bindTexture(glTarget, texture)
+
+    // make texture with one pixel to allow texture to load
+    const level = 0
+    const internalFormat = gl.RGBA
+    const width = 1
+    const height = 1
+    const border = 0
+    const srcFormat = gl.RGBA
+    const srcType = gl.UNSIGNED_BYTE
+    
+    // attach and load real texture
+    return new Promise( resolve => {
+        const image = new Image()
+        image.onload = () => resolve(texture,
+            gl.texImage2D(glTarget,
+                level,
+                internalFormat,
+                srcFormat,
+                srcType,
+                image
+            ))
+        image.src = url
+    })
+}
+
 function addSplitLineToList(line, list) {
     for (let i = 0; i < line.length; i++) {
         line[i] = parseFloat(line[i])
