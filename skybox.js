@@ -26,16 +26,41 @@ async function init() {
             gl_FragColor = textureCube(texture, position);
         }
     `
+
+    let objVertexShaderText = `
+        precision mediump float;
+
+        attribute vec3 vertPos;
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projMatrix;
+
+        void main() {
+            gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+        }
+    `
+
+    let objFragmentShaderText = `
+        precision mediump float;
+
+        // uniform samplerCube skyTexture;
+
+        void main() {
+            gl_FragColor = vec4(0.5, 0.1, 0.6, 1.0);
+        }
+    `
+
     const canvas = document.getElementById("cg1")
     /** @type {WebGLRenderingContext} */
     const gl = canvas.getContext("webgl")
 
+    // program for skybox
     const vertexShader = initVertexShader(gl, vertexShaderText)
     const fragmentShader = initFragShader(gl, fragmentShaderText)
     const program = gl.createProgram()
     gl.attachShader(program, vertexShader)
     gl.attachShader(program, fragmentShader)
     gl.linkProgram(program)
+    gl.useProgram(program)
 
     gl.enable(gl.DEPTH_TEST)
     gl.enable(gl.CULL_FACE)
@@ -119,10 +144,8 @@ async function init() {
         gl.FALSE,
         3 * Float32Array.BYTES_PER_ELEMENT,
         0 * Float32Array.BYTES_PER_ELEMENT
-        )
+    )
     gl.enableVertexAttribArray(positionAttribLocation)
-
-    gl.useProgram(program)
 
     var modelMatrix = new Float32Array(16)
     var viewMatrix = new Float32Array(16)
@@ -130,7 +153,7 @@ async function init() {
     var modelViewMatrix = new Float32Array(16)
 
     identity(modelMatrix)
-    lookAt(viewMatrix, [0,0,-5], [0,0,0], [0,1,0])
+    lookAt(viewMatrix, [10,10,40], [0,10,0], [0,1,0])
     // lookAt(viewMatrix, [0,0,-0.1], [0,0,0], [0,1,0]) // working
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, modelMatrix)
@@ -159,20 +182,75 @@ async function init() {
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 
+    // program for objects in scene
+    const objVertexShader = initVertexShader(gl, objVertexShaderText)
+    const objFragmentShader = initFragShader(gl, objFragmentShaderText)
+    const objProgram = gl.createProgram()
+    gl.attachShader(objProgram, objVertexShader)
+    gl.attachShader(objProgram, objFragmentShader)
+    gl.linkProgram(objProgram)
+    gl.useProgram(objProgram)
+
+    const obj = await getDataFromObj("http://127.0.0.1:5500/helmet.obj")
+    const objVbo = vboSetup(gl, obj)
+    gl.bindBuffer(gl.ARRAY_BUFFER, objVbo)
+    
+    const objModelViewLocation = gl.getUniformLocation(objProgram, 'modelViewMatrix')
+    const objProjMatrixLocation = gl.getUniformLocation(objProgram, 'projMatrix')
+    
+    function renderObjects() {
+        gl.clear(gl.DEPTH_BUFFER_BIT)
+        gl.useProgram(objProgram)
+        gl.bindBuffer(gl.ARRAY_BUFFER, objVbo)
+        
+        const objPositionAttribLocation = gl.getAttribLocation(objProgram, 'vertPos')
+        gl.vertexAttribPointer( // this is the problem 
+            objPositionAttribLocation,
+            3,
+            gl.FLOAT,
+            gl.FALSE,
+            8 * Float32Array.BYTES_PER_ELEMENT,
+            0 * Float32Array.BYTES_PER_ELEMENT
+        )
+        gl.enableVertexAttribArray(objPositionAttribLocation)
+        
+        gl.cullFace(gl.BACK)
+        
+        gl.uniformMatrix4fv(objModelViewLocation, false, modelViewMatrix)
+        gl.uniformMatrix4fv(objProjMatrixLocation, false, projectionMatrix)
+
+        gl.drawArrays(gl.TRIANGLES, 0, obj.length / 8)
+        console.log(gl.getVertexAttrib(0, gl.VERTEX_ATTRIB_ARRAY_STRIDE))
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    }
+
     gl.clearColor(0.2, 0.2, 0.2, 1)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    // gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 8)
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+    // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
     var angle = 0
-    var camX = 0
-    var camZ = 0
     
     function draw() {
         gl.clearColor(0.2, 0.2, 0.2, 1.0)
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        
+        // switch to skybox
+        gl.useProgram(program)
+        gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+        var positionAttribLocation = gl.getAttribLocation(program, "vertPos")
+        gl.vertexAttribPointer(
+            positionAttribLocation,
+            3,
+            gl.FLOAT,
+            gl.FALSE,
+            3 * Float32Array.BYTES_PER_ELEMENT,
+            0 * Float32Array.BYTES_PER_ELEMENT
+        )
+        gl.enableVertexAttribArray(positionAttribLocation)
+        gl.cullFace(gl.FRONT)
 
         rotateY(yRotationMatrix, identityMatrix, angle)
         multiply(modelMatrix, yRotationMatrix, identityMatrix)
@@ -180,10 +258,10 @@ async function init() {
         gl.uniformMatrix4fv(modelViewLocation, gl.FALSE, modelViewMatrix)
 
         angle += 0.005
-        camX += 0.01
-        camZ += 0.01
 
         gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
+
+        renderObjects()
 
         requestAnimationFrame(draw)
     }
