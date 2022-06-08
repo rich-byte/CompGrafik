@@ -164,7 +164,7 @@ function perspective(out, fovy, aspect, near, far) { // fovy is vertical field o
     if (far != null && far != Infinity) {
         var nf = 1 / (near - far)
         out[10] = (far + near) * nf
-        out[14] = 2 * far * nf
+        out[14] = 2 * far * near * nf
     } else {
         out[10] = -1
         out[14] = -2 * near
