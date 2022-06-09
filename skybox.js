@@ -2,6 +2,7 @@ async function init() {
     let vertexShaderText = `
         precision mediump float;
         attribute vec3 vertPos;
+
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
 
@@ -10,8 +11,6 @@ async function init() {
         void main(){
             vec3 vPos = (modelViewMatrix * vec4(vertPos, 0.0)).xyz;
             gl_Position = projMatrix * vec4(vPos, 1.0);
-
-            // gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0); // working
             position = vertPos;
         }
     `
@@ -31,21 +30,38 @@ async function init() {
         precision mediump float;
 
         attribute vec3 vertPos;
+        attribute vec3 vertNormal;
+
         uniform mat4 modelViewMatrix;
         uniform mat4 projMatrix;
+        uniform vec3 reflectionVec;
+
+        varying vec3 Normal;
+        varying vec3 fragReflectionVec;
 
         void main() {
             gl_Position = projMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+
+            Normal = vertNormal;
+            fragReflectionVec = reflectionVec;
         }
     `
 
     let objFragmentShaderText = `
         precision mediump float;
 
-        // uniform samplerCube skyTexture;
+        uniform samplerCube skyTexture;
+        varying vec3 Normal;
+        varying vec3 fragReflectionVec;
 
         void main() {
-            gl_FragColor = vec4(0.5, 0.1, 0.6, 1.0);
+            vec3 N = normalize(Normal);
+            float skalar = dot(fragReflectionVec, N);
+            if (skalar < 0.0) {
+                skalar = skalar * -1.0;
+            }
+            vec3 texCoords = N * skalar;
+            gl_FragColor = textureCube(skyTexture, texCoords);
         }
     `
 
@@ -154,7 +170,6 @@ async function init() {
 
     identity(modelMatrix)
     lookAt(viewMatrix, [10,10,40], [0,10,0], [0,1,0])
-    // lookAt(viewMatrix, [0,0,-0.1], [0,0,0], [0,1,0]) // working
     perspective(projectionMatrix, 45 * Math.PI / 180, canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0)
     multiply(modelViewMatrix, viewMatrix, modelMatrix)
 
@@ -195,16 +210,40 @@ async function init() {
     const objVbo = vboSetup(gl, obj)
     gl.bindBuffer(gl.ARRAY_BUFFER, objVbo)
     
+    // assumes (0,0,1,0) as z-vector 
+    var dirToCam = new Float32Array(3)
+    var viewMatrix3x3 = new Float32Array(9)
+    viewMatrix3x3[0] = viewMatrix[0]
+    viewMatrix3x3[1] = viewMatrix[1]
+    viewMatrix3x3[2] = viewMatrix[2]
+    viewMatrix3x3[3] = viewMatrix[4]
+    viewMatrix3x3[4] = viewMatrix[5]
+    viewMatrix3x3[5] = viewMatrix[6]
+    viewMatrix3x3[6] = viewMatrix[8]
+    viewMatrix3x3[7] = viewMatrix[9]
+    viewMatrix3x3[8] = viewMatrix[10]
+    viewMatrix3x3 = inverse3x3(viewMatrix3x3, viewMatrix3x3)
+    dirToCam[2] = viewMatrix3x3[6] + viewMatrix3x3[7] + viewMatrix3x3[8] 
+
+    console.log(viewMatrix)
+    console.log('(' + viewMatrix3x3[6] + '/' + viewMatrix3x3[7] + '/' + viewMatrix3x3[8] + ')')
+    console.log(dirToCam)
+
     const objModelViewLocation = gl.getUniformLocation(objProgram, 'modelViewMatrix')
     const objProjMatrixLocation = gl.getUniformLocation(objProgram, 'projMatrix')
-    
+    const objtextureLocation = gl.getUniformLocation(objProgram, 'skyTexture')
+    const objReflectionVectorLocation = gl.getUniformLocation(objProgram, 'reflectionVec')
+
+    gl.uniform3fv(objReflectionVectorLocation, dirToCam)
+    gl.uniform1i(objtextureLocation, 0)
+
     function renderObjects() {
         gl.clear(gl.DEPTH_BUFFER_BIT)
-        gl.useProgram(objProgram)
+        gl.useProgram(objProgram)      // err
         gl.bindBuffer(gl.ARRAY_BUFFER, objVbo)
         
         const objPositionAttribLocation = gl.getAttribLocation(objProgram, 'vertPos')
-        gl.vertexAttribPointer( // this is the problem 
+        gl.vertexAttribPointer( 
             objPositionAttribLocation,
             3,
             gl.FLOAT,
@@ -213,6 +252,17 @@ async function init() {
             0 * Float32Array.BYTES_PER_ELEMENT
         )
         gl.enableVertexAttribArray(objPositionAttribLocation)
+
+        const objNormalAttribLocation = gl.getAttribLocation(objProgram, 'vertNormal')
+        gl.vertexAttribPointer(
+            objNormalAttribLocation,
+            3,
+            gl.FLOAT,
+            gl.FALSE,
+            8 * Float32Array.BYTES_PER_ELEMENT,
+            5 * Float32Array.BYTES_PER_ELEMENT
+        )
+        gl.enableVertexAttribArray(objNormalAttribLocation)
         
         gl.cullFace(gl.BACK)
         
@@ -220,7 +270,6 @@ async function init() {
         gl.uniformMatrix4fv(objProjMatrixLocation, false, projectionMatrix)
 
         gl.drawArrays(gl.TRIANGLES, 0, obj.length / 8)
-        console.log(gl.getVertexAttrib(0, gl.VERTEX_ATTRIB_ARRAY_STRIDE))
 
         gl.bindBuffer(gl.ARRAY_BUFFER, null)
     }
@@ -230,6 +279,7 @@ async function init() {
 
     // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0)
     gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
 
     var angle = 0
     
